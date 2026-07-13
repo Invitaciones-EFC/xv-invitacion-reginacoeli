@@ -1150,7 +1150,7 @@
   <!-- ===== FLOATING MUSIC PLAYER ===== -->
   <div id="music-player">
     <button id="btn-play" aria-label="Reproducir música">
-      <svg viewBox="0 0 24 24" fill="currentColor" id="icon-play"><path d="M8 5v14l11-7z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor" id="icon-play"><path id="icon-path" d="M8 5v14l11-7z"/></svg>
     </button>
     <div class="wave-bar-wrap paused" id="wave-bars">
       <div class="wave-bar"></div>
@@ -1524,9 +1524,11 @@
     }
 
     function updatePlayerUI() {
-      var iconPlay  = '<path d="M8 5v14l11-7z"/>';
-      var iconPause = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
-      document.getElementById('icon-play').innerHTML = isPlaying ? iconPause : iconPlay;
+      /* setAttribute('d') en lugar de innerHTML: Safari iOS no dibuja
+         paths creados via innerHTML dentro de un SVG */
+      var iconPlay  = 'M8 5v14l11-7z';
+      var iconPause = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
+      document.getElementById('icon-path').setAttribute('d', isPlaying ? iconPause : iconPlay);
       var waveBars = document.getElementById('wave-bars');
       if (isPlaying) {
         waveBars.classList.remove('paused');
