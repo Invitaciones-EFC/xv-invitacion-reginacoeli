@@ -613,7 +613,7 @@
 
     /* ===== COUNTDOWN (con foto de fondo) ===== */
     #countdown {
-      background: url('foto-rsvp.jpg') center center / cover no-repeat fixed;
+      background: url('foto-rsvp.jpg') center center / cover no-repeat;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -1139,6 +1139,9 @@
     ></iframe>
   </div>
 
+  <!-- ===== AUDIO LOCAL (sin anuncios; si no existe musica.mp3 se usa YouTube) ===== -->
+  <audio id="bg-audio" src="musica.mp3" loop preload="auto"></audio>
+
   <!-- ===== FLOATING MUSIC PLAYER ===== -->
   <div id="music-player">
     <button id="btn-play" aria-label="Reproducir música">
@@ -1420,15 +1423,13 @@
     env.addEventListener('click', function () { env.classList.toggle('open'); });
 
     document.getElementById('btn-open-invite').addEventListener('click', function () {
+      /* La música debe iniciarse DENTRO del clic (iOS bloquea audio iniciado en un setTimeout) */
+      playMusic();
       if (!env.classList.contains('open')) {
         env.classList.add('open');
-        setTimeout(function () {
-          openOverlay();
-          playMusic();
-        }, 700);
+        setTimeout(openOverlay, 700);
       } else {
         openOverlay();
-        playMusic();
       }
     });
 
@@ -1437,7 +1438,38 @@
       document.body.classList.add('scrollable');
     }
 
-    /* ----- YOUTUBE PLAYER API ----- */
+    /* ----- MÚSICA: audio local (sin anuncios) con YouTube como respaldo ----- */
+    var bgAudio = document.getElementById('bg-audio');
+    var audioOk = true;
+    bgAudio.volume = 0.6;
+    bgAudio.addEventListener('error', function () { audioOk = false; });
+    bgAudio.addEventListener('play',  function () { isPlaying = true;  updatePlayerUI(); });
+    bgAudio.addEventListener('pause', function () { isPlaying = false; updatePlayerUI(); });
+
+    function playMusic() {
+      document.getElementById('music-player').classList.add('visible');
+      if (audioOk) {
+        var p = bgAudio.play();
+        if (p && p.catch) {
+          p.catch(function () {
+            audioOk = false;
+            playMusicYT();
+          });
+        }
+      } else {
+        playMusicYT();
+      }
+    }
+
+    function toggleMusic() {
+      if (audioOk) {
+        if (bgAudio.paused) { playMusic(); } else { bgAudio.pause(); }
+      } else {
+        toggleMusicYT();
+      }
+    }
+
+    /* ----- YOUTUBE PLAYER API (respaldo) ----- */
     var ytPlayer;
     var ytReady = false;
     var isPlaying = false;
@@ -1450,7 +1482,7 @@
             ytReady = true;
             if (pendingPlay) {
               pendingPlay = false;
-              playMusic();
+              playMusicYT();
             }
           },
           onStateChange: function (e) {
@@ -1467,7 +1499,7 @@
       document.head.appendChild(tag);
     })();
 
-    function playMusic() {
+    function playMusicYT() {
       if (!ytReady) { pendingPlay = true; return; }
       ytPlayer.unMute && ytPlayer.unMute();
       ytPlayer.setVolume && ytPlayer.setVolume(60);
@@ -1475,7 +1507,7 @@
       document.getElementById('music-player').classList.add('visible');
     }
 
-    function toggleMusic() {
+    function toggleMusicYT() {
       if (!ytReady) { pendingPlay = true; return; }
       if (isPlaying) {
         ytPlayer.pauseVideo();
