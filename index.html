@@ -25,15 +25,20 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    /* overflow-x en html y body evita que las animaciones AOS (fade-left/right)
+       ensanchen la pagina en celulares antes de animarse */
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      overflow-y: hidden;
+    }
+    html.scrollable { overflow-y: auto; }
     body {
       font-family: 'Lato', sans-serif;
       background: var(--crema);
       color: #333;
       overflow-x: hidden;
-      overflow-y: hidden;
     }
-    body.scrollable { overflow-y: auto; }
 
     /* ===== KEYFRAMES (animaciones globales) ===== */
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -1435,7 +1440,7 @@
 
     function openOverlay() {
       overlay.classList.add('hidden');
-      document.body.classList.add('scrollable');
+      document.documentElement.classList.add('scrollable');
     }
 
     /* ----- MÚSICA: audio local (sin anuncios) con YouTube como respaldo ----- */
